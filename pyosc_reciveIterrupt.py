@@ -25,7 +25,7 @@ def print_recibed_msg(addr, args, *osc):
 #create the dispatcher
 dispatcher = dispatcher.Dispatcher()
 #register a handler to print on the address /print
-dispatcher.map("/quats", print_recibed_msg, "MSG")
+dispatcher.map("/print", print_recibed_msg, "MSG")
 
 #create and start the server
 server = osc_server.OSCUDPServer(("127.0.0.1", 7000), dispatcher)

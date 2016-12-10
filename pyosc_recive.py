@@ -31,11 +31,3 @@ dispatcher.map("/print", print_recibed_msg, "MSG")
 server = osc_server.ThreadingOSCUDPServer(("127.0.0.1", 7000), dispatcher)
 print("Serving on {}".format(server.server_address))
 server.serve_forever()
-
-try :
-    while 1 :
-        time.sleep(5)
-
-except KeyboardInterrupt :
-    print ("\nClosing OSCServer.")
-    server.shutdown()

@@ -4,7 +4,7 @@
 import bpy
 import os
 
-theScript = 'pyosc_to_BlenderRot.py'
+theScript = 'OscToRot_modal.py'
 
 filename = os.path.join(os.path.dirname(bpy.data.filepath), theScript)
 exec(compile(open(filename).read(), filename, 'exec'))

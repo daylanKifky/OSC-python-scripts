@@ -8,11 +8,11 @@ c = OSC.OSCClient()
 c.connect(send_address)
 
 msg = OSC.OSCMessage()
-msg.setAddress("/quats")
+msg.setAddress("/euler/z")
 
 for i in range(360):
 	msg = OSC.OSCMessage()
-	msg.setAddress("/quats")
+	msg.setAddress("/euler/z")
 	msg.append(i)
 		
 	print "sending ",i

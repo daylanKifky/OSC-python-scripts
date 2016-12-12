@@ -23,8 +23,8 @@ D = bpy.data
 class OscOperator(bpy.types.Operator):
 	"""Recibe Osc messages and rotate an object"""
 	#Required properties of a Blender operator
-	bl_idname = "wm.recive_osc"
-	bl_label = "Recive OSC"
+	bl_idname = "wm.receive_osc"
+	bl_label = "Receive OSC"
 
 	#Some vars to store stuff
 	_timer = None

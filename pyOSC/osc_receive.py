@@ -19,7 +19,7 @@ s.addDefaultHandlers()
 def B(addr, tags, stuff, source):
 	# print addr #/print
 	# print tags #sif
-	print stuff #['lalal', 2500, 3.140000104904175]
+	print stuff #['Test', 2500, 3.140000104904175]
 	# print source #('127.0.0.1', 40232)
 
 def samplerate(addr, tags, stuff, source):

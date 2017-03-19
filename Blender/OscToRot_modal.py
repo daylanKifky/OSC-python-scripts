@@ -28,13 +28,31 @@ class OscOperator(bpy.types.Operator):
 
 	#Some vars to store stuff
 	_timer = None
-	theObject = 'Cube'
+	elemABrazo = 'AnteBrazoSensor'
+	elemBrazo = 'BrazoSensor'
+	elemMano = 'ManoSensor'
+	
+	positionElem = 'Icosphere'
 	lastQuad = None 
+	lastPos = None
 
 	#Add a blender prop to the Scene class
-	bpy.types.Scene.custom = bpy.props.FloatVectorProperty(subtype='QUATERNION', name="elquat", size=4)
+	bpy.types.Scene.quatMano = bpy.props.FloatVectorProperty(subtype='QUATERNION', name="manoquat", size=4)
+	bpy.types.Scene.quatBrazo = bpy.props.FloatVectorProperty(subtype='QUATERNION', name="brazoquat", size=4)
+	bpy.types.Scene.quatAnteBrazo = bpy.props.FloatVectorProperty(subtype='QUATERNION', name="brazoquat", size=4)
+
+	bpy.types.Scene.customPos = bpy.props.FloatVectorProperty(subtype='XYZ', name="lapos")
 	#Store the default scene's custom property inside a class member
-	quat = D.scenes['Scene'].custom
+	quat = {
+	"mano" : D.scenes['Scene'].quatMano,
+	"brazo" : D.scenes['Scene'].quatBrazo,
+	"antebrazo" : D.scenes['Scene'].quatAnteBrazo
+	
+	}
+
+
+	
+	pos = D.scenes['Scene'].customPos
 
 	###########################################
 	### DEFINING bpy,types.Operator METHODS ###
@@ -59,8 +77,14 @@ class OscOperator(bpy.types.Operator):
 		wm.modal_handler_add(self)
 
 		#Set the object to quaternion rotate mode, and the initial rotation to the default
-		D.objects[self.theObject].rotation_mode = 'QUATERNION'
-		D.objects['Cube'].rotation_quaternion = (1,0,0,0)
+		D.objects[self.elemABrazo].rotation_mode = 'QUATERNION'
+		D.objects[self.elemABrazo].rotation_quaternion = (1,0,0,0)
+
+		D.objects[self.elemBrazo].rotation_mode = 'QUATERNION'
+		D.objects[self.elemBrazo].rotation_quaternion = (1,0,0,0)
+
+		D.objects[self.elemMano].rotation_mode = 'QUATERNION'
+		D.objects[self.elemMano].rotation_quaternion = (1,0,0,0)
 
 		#Start the server
 		print("************INIT SERVER***************")
@@ -80,11 +104,19 @@ class OscOperator(bpy.types.Operator):
 			return {'CANCELLED'}
 
 		if event.type == 'TIMER':
-			print(self.quat)
-			if self.lastQuad != self.quat:
-				self.lastQuad = self.quat.copy()
-				print(self.quat )
-				D.objects[self.theObject].rotation_quaternion.rotate( self.quat )
+			# print(self.quat)
+			# if self.lastQuad != self.quat:
+			# 	self.lastQuad = self.quat.copy()
+				
+				# D.objects[self.rotatingCube].rotation_quaternion.rotate( self.quat )
+			D.objects[self.elemABrazo].rotation_quaternion = self.quat['antebrazo']
+			D.objects[self.elemBrazo].rotation_quaternion = self.quat['brazo']
+			D.objects[self.elemMano].rotation_quaternion = self.quat['mano']
+
+			# if self.lastPos != self.pos:
+			# 	self.lastPos = self.pos.copy()
+			# 	D.objects[self.positionElem].location = self.pos
+			# 	print(D.objects['Icosphere'].location.magnitude)
 
 		return {'RUNNING_MODAL'}
 
@@ -116,10 +148,13 @@ class OscOperator(bpy.types.Operator):
 		self.dispatcher = dispatcher.Dispatcher()
 		#register a handler to set the recived values on the address /quats
 		#to a blender property somewhere
-		self.dispatcher.map("/quats", osc_to_prop_quat, self.quat)
+		self.dispatcher.map("/ManoSensor", receive_Quat, self.quat['mano'])
+		self.dispatcher.map("/BrazoSensor", receive_Quat, self.quat['brazo'])
+		self.dispatcher.map("/AnteBrazoSensor", receive_Quat, self.quat['antebrazo'])
+		
 
 		#Start evetything
-		self.server = osc_server.OSCUDPServer(("127.0.0.1", 7000), self.dispatcher)
+		self.server = osc_server.OSCUDPServer(("10.42.0.1", 6565), self.dispatcher)
 		self.st = threading.Thread( target = self.server.serve_forever)
 		print("Serving on {}".format(self.server.server_address))
 		self.st.start()
@@ -128,15 +163,27 @@ class OscOperator(bpy.types.Operator):
 ###             OSC HANDLERS            ###
 ###########################################
 
-def osc_to_prop_quat(addr, obj, *val):
+def receive_Quat(addr, obj, *val):
 	"""
 	OSC HANDLER get a tuple of 4 OSC values and set them the passed obj
 	"""
-	print(type(val))
+	print("RECEIVED ", val)
 	if 4 == len(val):
 		for i in range(4):
 			obj[0][i] = float(val[i])
 
 
 
+
 bpy.utils.register_class(OscOperator)
+
+
+# marcel antunez
+
+
+# raul nieves
+# laderiva.net / ilaro.org
+# root@pratipo.org
+
+
+# miguel@hangar.org

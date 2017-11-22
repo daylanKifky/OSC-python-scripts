@@ -18,7 +18,7 @@ from pythonosc import osc_server
 import bpy
 D = bpy.data
 
-
+IP, PORT = "192.168.43.189", 6565
 
 class OscOperator(bpy.types.Operator):
 	"""Recibe Osc messages and rotate an object"""
@@ -154,7 +154,7 @@ class OscOperator(bpy.types.Operator):
 		
 
 		#Start evetything
-		self.server = osc_server.OSCUDPServer(("10.42.0.1", 6565), self.dispatcher)
+		self.server = osc_server.OSCUDPServer((IP, PORT), self.dispatcher)
 		self.st = threading.Thread( target = self.server.serve_forever)
 		print("Serving on {}".format(self.server.server_address))
 		self.st.start()

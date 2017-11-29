@@ -80,11 +80,11 @@ class OscOperator(bpy.types.Operator):
 			return {'CANCELLED'}
 
 		if event.type == 'TIMER':
-			print(self.quat)
+			# print(self.quat)
 			if self.lastQuad != self.quat:
 				self.lastQuad = self.quat.copy()
-				print(self.quat )
-				D.objects[self.theObject].rotation_quaternion.rotate( self.quat )
+				# print(self.quat )
+				D.objects[self.theObject].rotation_quaternion = self.quat
 
 		return {'RUNNING_MODAL'}
 
@@ -116,10 +116,10 @@ class OscOperator(bpy.types.Operator):
 		self.dispatcher = dispatcher.Dispatcher()
 		#register a handler to set the recived values on the address /quats
 		#to a blender property somewhere
-		self.dispatcher.map("/quats", osc_to_prop_quat, self.quat)
+		self.dispatcher.map("/Chordata/Unico", osc_to_prop_quat, self.quat)
 
 		#Start evetything
-		self.server = osc_server.OSCUDPServer(("127.0.0.1", 7000), self.dispatcher)
+		self.server = osc_server.OSCUDPServer(("10.42.0.1", 6565), self.dispatcher)
 		self.st = threading.Thread( target = self.server.serve_forever)
 		print("Serving on {}".format(self.server.server_address))
 		self.st.start()
@@ -132,7 +132,7 @@ def osc_to_prop_quat(addr, obj, *val):
 	"""
 	OSC HANDLER get a tuple of 4 OSC values and set them the passed obj
 	"""
-	print(type(val))
+	print(val)
 	if 4 == len(val):
 		for i in range(4):
 			obj[0][i] = float(val[i])

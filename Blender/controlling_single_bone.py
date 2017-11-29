@@ -11,7 +11,7 @@ import time, threading
 from pythonosc import dispatcher
 from pythonosc import osc_server
 
-IP, PORT = "10.42.0.1", 6565
+IP, PORT = "", 6565
 
 
 system("clear")
@@ -118,7 +118,11 @@ class ModalOperator(bpy.types.Operator):
         wm = context.window_manager
         wm.event_timer_remove(self._timer)
         
-        self.chord.close_server()
+        print ("\nClosing OSCServer.")
+        self.server.shutdown()
+        print ("Waiting for Server-thread to finish")
+        self.st.join() 
+        print ("Done")
 
 
 
@@ -131,7 +135,7 @@ class ModalOperator(bpy.types.Operator):
         self.dispatcher = dispatcher.Dispatcher()
         #register a handler to set the recived values on the address /quats
         #to a blender property somewhere
-        self.dispatcher.map("/Chordata/l-arm", receive_Quat, self.quat)
+        self.dispatcher.map("/Chordata/Unico", receive_Quat, self.quat)
         
 
         #Start evetything

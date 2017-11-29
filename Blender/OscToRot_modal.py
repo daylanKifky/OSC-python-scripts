@@ -18,7 +18,7 @@ from pythonosc import osc_server
 import bpy
 D = bpy.data
 
-IP, PORT = "192.168.43.189", 6565
+IP, PORT = "10.42.0.1", 6565
 
 class OscOperator(bpy.types.Operator):
 	"""Recibe Osc messages and rotate an object"""
@@ -148,9 +148,9 @@ class OscOperator(bpy.types.Operator):
 		self.dispatcher = dispatcher.Dispatcher()
 		#register a handler to set the recived values on the address /quats
 		#to a blender property somewhere
-		self.dispatcher.map("/ManoSensor", receive_Quat, self.quat['mano'])
-		self.dispatcher.map("/BrazoSensor", receive_Quat, self.quat['brazo'])
-		self.dispatcher.map("/AnteBrazoSensor", receive_Quat, self.quat['antebrazo'])
+		self.dispatcher.map("/Chordata/l-hand", receive_Quat, self.quat['mano'])
+		self.dispatcher.map("/Chordata/l-arm", receive_Quat, self.quat['brazo'])
+		self.dispatcher.map("/Chordata/l-forarm", receive_Quat, self.quat['antebrazo'])
 		
 
 		#Start evetything

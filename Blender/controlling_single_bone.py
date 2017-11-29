@@ -118,11 +118,7 @@ class ModalOperator(bpy.types.Operator):
         wm = context.window_manager
         wm.event_timer_remove(self._timer)
         
-        print ("\nClosing OSCServer.")
-        self.server.shutdown()
-        print ("Waiting for Server-thread to finish")
-        self.st.join() ##!!!
-        print ("Done")
+        self.chord.close_server()
 
 
 

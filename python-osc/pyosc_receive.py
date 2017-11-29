@@ -5,9 +5,12 @@ received packets.
 """
 import math
 import time, threading
+from sys import path as syspath
+syspath.append("/usr/local/lib/python2.7/dist-packages")
 
 from pythonosc import dispatcher
 from pythonosc import osc_server
+
 
 def print_recibed_msg(addr, args, *osc):
   """Print the recibed OSC message.
@@ -28,7 +31,7 @@ dispatcher = dispatcher.Dispatcher()
 dispatcher.map("/print", print_recibed_msg, "MSG")
 
 #create and start the server
-server = osc_server.OSCUDPServer(("127.0.0.1", 7000), dispatcher)
+server = osc_server.OSCUDPServer(("localhost", 6565), dispatcher)
 st = threading.Thread( target = server.serve_forever)
 print("Serving on {}".format(server.server_address))
 st.start()

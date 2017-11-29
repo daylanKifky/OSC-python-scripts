@@ -2,13 +2,13 @@
 
 import OSC
 
-send_address = '127.0.0.1' , 7000
+send_address = '127.0.0.1' , 6565
 
 c = OSC.OSCClient()
 c.connect(send_address)
 
 msg = OSC.OSCMessage()
-msg.setAddress("/print")
+msg.setAddress("/Chordata/sas")
 msg.append("Test")
 msg.append(2500)
 msg.append(3.14)

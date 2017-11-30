@@ -19,7 +19,7 @@ class Chordata:
 
 	def __init__(self):
 		self.object = None
-
+		bpy.ops.object.mode_set(mode="OBJECT")
 		self.message = " Chordata operator | Calibrating... Press AKEY to end "
 
 		for o in D.objects:
@@ -35,6 +35,9 @@ class Chordata:
 		
 		print("Bones found in armature")	
 		for b in self.bones:
+			b.use_inherit_rotation = False
+			D.objects[b.name].rotation_mode = "QUATERNION"
+
 			self.temp[b.name] = {}
 			self.temp[b.name]["chord_quat"] = Quaternion()
 			self.temp[b.name]["avg_quat"] = Quaternion()
@@ -103,7 +106,7 @@ def receive(addr, objs, *osc_vals):
 	if not sensor or sensor.lastindex < 1:
 		print("Invalid address")
 		return
-	print(osc_vals)
+	# print(osc_vals)
 
 	try:
 		for x in range(len(osc_vals)):

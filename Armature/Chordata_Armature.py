@@ -35,6 +35,9 @@ class Chordata:
 		
 		print("Bones found in armature")	
 		for b in self.bones:
+			if b.name == "no-capture-bone":
+				continue
+
 			b.use_inherit_rotation = False
 			D.objects[b.name].rotation_mode = "QUATERNION"
 
@@ -46,17 +49,13 @@ class Chordata:
 
 			print(" [{}]".format(b.name))
 
-		# print(self.object.pose.bones[0].rotation_quaternion)
-
-		# self.object.pose.bones[0].rotation_quaternion = Quaternion() 	
-
-		# print(self.object.pose.bones[0].rotation_quaternion)
 
 
 	def put_quad_on_bones(self):
 		# for b in self.bones:
 		# 	self.pose[b.name].rotation_quaternion = b["chord_quat"]
 			# print(self.pose[b.name].rotation_quaternion)
+			# 
 			
 		for key, b in self.temp.items():
 			D.objects[key].rotation_quaternion = b['chord_quat'] 
@@ -75,7 +74,7 @@ class Chordata:
 			q0 = b["local_q"].conjugated() * b['avg_quat'].copy() * b["local_q"]
 			b["diff_quat"] = self.object.pose.bones[key].rotation_quaternion.rotation_difference(q0)
 
-		self.message = " Chordata operator | posing... "
+		self.message = " Chordata operator | posing... (Press Q, W, E to switch layers)"
 
 
 	def start_server(self, IP = "", PORT = 6565):

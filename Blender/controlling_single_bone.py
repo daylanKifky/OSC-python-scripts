@@ -135,7 +135,7 @@ class ModalOperator(bpy.types.Operator):
         self.dispatcher = dispatcher.Dispatcher()
         #register a handler to set the recived values on the address /quats
         #to a blender property somewhere
-        self.dispatcher.map("/Chordata/Unico", receive_Quat, self.quat)
+        self.dispatcher.map("/Chordata/.*", receive_Quat, self.quat)
         
 
         #Start evetything

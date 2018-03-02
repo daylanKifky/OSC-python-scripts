@@ -34,6 +34,7 @@ class ReceiveOperator(bpy.types.Operator):
 
     def __init__(self):
         self.chord = chordata.Chordata()
+        self.last_event = ""
 
     def invoke(self, context, event):
         """Start the timer"""
@@ -47,6 +48,11 @@ class ReceiveOperator(bpy.types.Operator):
         self.chord.start_server()
         
         self.text(self.chord.message)
+
+
+        D.scenes['Scene'].layers[0] = True
+        D.scenes['Scene'].layers[1] = True
+        D.scenes['Scene'].layers[2] = True
 
         return {'RUNNING_MODAL'}
 
@@ -64,13 +70,32 @@ class ReceiveOperator(bpy.types.Operator):
             self.chord.get_rot_diff()
             self.text(self.chord.message)
 
-        elif event.type == 'LEFTMOUSE':
-            self.cancel(context)
-            return {'FINISHED'}
+        elif event.type == "Q":
+            D.scenes['Scene'].layers[0] = False
+
+
+
+        elif event.type == "W":
+            D.scenes['Scene'].layers[1] = False
+
+        elif event.type == "E":
+            D.scenes['Scene'].layers[2] = False
+
+        elif event.type == "R":
+            D.scenes['Scene'].layers[0] = True
+            D.scenes['Scene'].layers[1] = True
+            D.scenes['Scene'].layers[2] = True
+
+
+        # elif event.type == 'LEFTMOUSE':
+        #     self.cancel(context)
+        #     return {'FINISHED'}
 
         elif event.type in {'RIGHTMOUSE', 'ESC'}:
             self.cancel(context)
             return {'CANCELLED'}
+
+        self.last_event = event.type
 
         return {'RUNNING_MODAL'}
 

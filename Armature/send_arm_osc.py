@@ -61,7 +61,7 @@ def project_3d_point(camera: bpy.types.Object,
 
 D=bpy.data
 C=bpy.context
-cam = D.objects['Camera']
+cam = D.objects['the_cam']
 
 from pythonosc import osc_message_builder
 from pythonosc import osc_bundle_builder
@@ -99,6 +99,7 @@ class note_debouncer:
 
         if ob.name in self.last_frame.keys():
             pressing = self.is_pressing(ob.name, inside)
+            vel = self.velocity(ob.name, point)
 
         self.last_frame[ob.name] = (inside, point)
         return pressing, vel        
@@ -111,6 +112,12 @@ class note_debouncer:
 
         # self.last_frame[name] = (state,)
         return (state ^ self.last_frame[name][0]) & state
+
+    def velocity(self, name, pos):
+        return  (pos - self.last_frame[name][1]).magnitude
+
+
+
 
 
 deb =  note_debouncer()
@@ -129,11 +136,6 @@ def send_Armature(arm: bpy.types.Armature):
         M = arm.matrix_world * b.matrix * Matrix.Translation((0,b.vector.magnitude,0))
         w_loc = M.to_translation()
         res = project_3d_point(cam, w_loc)
-        #add coordinates
-        msg = osc_message_builder.OscMessageBuilder(address="/point")
-        msg.add_arg(res[0])
-        msg.add_arg(res[1])
-        bundle.add_content(msg.build())
 
 
 
@@ -145,18 +147,23 @@ def send_Armature(arm: bpy.types.Armature):
                     press, vel = deb.calculate(w_loc, ob)
                     if press:
                     
-                        print("NOTE", ob.note)
+                        print("NOTE", ob.note, vel)
                         msg = osc_message_builder.OscMessageBuilder(address="/note")
                         msg.add_arg(ob.note)
+                        msg.add_arg(vel)
+                        bundle.add_content(msg.build())
 
-
-
+        
+        #add coordinates
+        msg = osc_message_builder.OscMessageBuilder(address="/point")
+        msg.add_arg(res[0])
+        msg.add_arg(res[1])
         bundle.add_content(msg.build())
         
         #client.send_message("/point", (res[0], res[1]))
-        #print(res)
+        # print("#"*10, b.name)
     
-    print("send frame: ", C.scene.frame_current )
+    # print("send frame: ", C.scene.frame_current )
     bundle = bundle.build()
     client.send(bundle)
 
@@ -200,12 +207,20 @@ class send_osc(bpy.types.Operator):
         return {"FINISHED"}
 
 
+def register():
+    bpy.utils.register_class(send_osc)
+    piano_collide.register()
+    
+
+
+def unregister():
+    bpy.utils.unregister_class(send_osc)
+    piano_collide.unregister()
+
 
 
 if __name__ == '__main__':
-    bpy.utils.register_class(send_osc)
-    piano_collide.register()
-    pass    
+    register()    
 
     # send_animation(D.objects["TARGET"])
          

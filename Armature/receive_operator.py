@@ -14,14 +14,16 @@ from sys import path as syspath
 syspath.append(path.dirname(bpy.data.filepath))
 
 import Chordata_Armature as chordata
+import send_arm_osc as send
 from importlib import reload
 reload(chordata)
 
 system("clear")
 
 D = bpy.data
-D = bpy.data
 C = bpy.context
+
+do_send_osc = True 
 
 
 class ReceiveOperator(bpy.types.Operator):
@@ -54,6 +56,9 @@ class ReceiveOperator(bpy.types.Operator):
         D.scenes['Scene'].layers[1] = True
         D.scenes['Scene'].layers[2] = True
 
+        if do_send_osc:
+            send.send_init_msg(self.chord.object)
+
         return {'RUNNING_MODAL'}
 
     def text(self, text):
@@ -65,6 +70,9 @@ class ReceiveOperator(bpy.types.Operator):
 
         if event.type == 'TIMER':
             self.chord.put_quad_on_bones()
+
+            if do_send_osc:
+                send.send_Armature(self.chord.object)
 
         elif event.type == 'A':
             self.chord.get_rot_diff()
@@ -126,15 +134,17 @@ class ReceiveOperator(bpy.types.Operator):
         
 
 def register():
+    send.register()
     bpy.utils.register_class(ReceiveOperator)
 
 
 def unregister():
     bpy.utils.unregister_class(ReceiveOperator)
+    send.unregister()
 
 
 if __name__ == "__main__":
     register()
 
     # test call
-    bpy.ops.object.receive_operator('INVOKE_DEFAULT')
+    # bpy.ops.object.receive_operator('INVOKE_DEFAULT')

@@ -90,6 +90,16 @@ class note_debouncer:
     zero_v = Vector()
     def __init__(self):
         self.last_frame = {}
+        self.vel = self.zero_v
+
+    def track(self, point, ob):
+        res = point - ob.location
+        
+        if res.x > 0 and res.y > 0 and res.z > 0 :
+            return res
+
+        return self.zero_v 
+
 
     def calculate(self, point, ob):
         inside = piano_collide.is_inside(point, ob)
@@ -101,8 +111,9 @@ class note_debouncer:
             pressing = self.is_pressing(ob.name, inside)
             vel = self.velocity(ob.name, point)
 
-        self.last_frame[ob.name] = (inside, point)
-        return pressing, vel        
+        self.last_frame[ob.name] = inside
+        self.vel = vel
+        return pressing, vel.magnitude        
 
     def is_pressing(self, name, state):
         # result = False
@@ -111,16 +122,18 @@ class note_debouncer:
         #     result = (state ^ self.last_frame[name]) & state
 
         # self.last_frame[name] = (state,)
-        return (state ^ self.last_frame[name][0]) & state
+        return (state ^ self.last_frame[name]) & state
 
     def velocity(self, name, pos):
-        return  (pos - self.last_frame[name][1]).magnitude
+        return  (pos - self.vel)
 
 
 
+debs = {}
+for b in C.object.pose.bones:
+    debs[b.name]=note_debouncer()
 
-
-deb =  note_debouncer()
+# deb =  note_debouncer()
 
 def send_Armature(arm: bpy.types.Armature):
     bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
@@ -142,9 +155,9 @@ def send_Armature(arm: bpy.types.Armature):
         if arm.data.bones[b.name].player:
             # bpy.ops.object.empty_add(radius = 0.1, location= w_loc)
             for ob in D.objects:
-                if ob.note not in ["NONE", "NOT_SET"]:
+                if ob.note not in ["NONE", "NOT_SET", "TRACK"]:
                     # print(ob,w_loc, ob.note)
-                    press, vel = deb.calculate(w_loc, ob)
+                    press, vel = debs[b.name].calculate(w_loc, ob)
                     if press:
                     
                         print("NOTE", ob.note, vel)
@@ -153,15 +166,26 @@ def send_Armature(arm: bpy.types.Armature):
                         msg.add_arg(vel)
                         bundle.add_content(msg.build())
 
+                elif ob.note == "TRACK":
+                    track = debs[b.name].track(w_loc, ob)
+                    if track.to_tuple() != debs[b.name].zero_v.to_tuple():
+                        msg = osc_message_builder.OscMessageBuilder(address="/track")
+                        msg.add_arg(track.x)
+                        msg.add_arg(track.y)
+                        msg.add_arg(track.z)
+                        print("TRACK",  track)
+
+                        bundle.add_content(msg.build()) 
+
         
         #add coordinates
         msg = osc_message_builder.OscMessageBuilder(address="/point")
         msg.add_arg(res[0])
         msg.add_arg(res[1])
+
         bundle.add_content(msg.build())
         
         #client.send_message("/point", (res[0], res[1]))
-        # print("#"*10, b.name)
     
     # print("send frame: ", C.scene.frame_current )
     bundle = bundle.build()

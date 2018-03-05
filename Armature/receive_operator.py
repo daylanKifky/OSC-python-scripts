@@ -17,13 +17,14 @@ import Chordata_Armature as chordata
 import send_arm_osc as send
 from importlib import reload
 reload(chordata)
+reload(send)
 
 system("clear")
 
 D = bpy.data
 C = bpy.context
 
-do_send_osc = True 
+do_send_osc = False 
 
 
 class ReceiveOperator(bpy.types.Operator):
@@ -41,7 +42,12 @@ class ReceiveOperator(bpy.types.Operator):
     def invoke(self, context, event):
         """Start the timer"""
 
-        # return {'FINISHED'}
+        if context.scene.layers[10]:
+            do_send_osc = True
+            print ("^"*10, "SENDING OSC TO:", send.IP, send.PORT)
+        else:
+            do_send_osc = False
+            print("^"*10, "NOT SENDING OSC!")
         
         wm = context.window_manager
         self._timer = wm.event_timer_add(0.05, context.window)
@@ -67,6 +73,10 @@ class ReceiveOperator(bpy.types.Operator):
         
 
     def modal(self, context, event):
+        if context.scene.layers[10]:
+            do_send_osc = True
+        else:
+            do_send_osc = False
 
         if event.type == 'TIMER':
             self.chord.put_quad_on_bones()

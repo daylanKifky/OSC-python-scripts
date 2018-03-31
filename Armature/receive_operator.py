@@ -4,6 +4,8 @@ from bpy.props import IntProperty, FloatProperty
 from mathutils import *
 from math import *
 
+# import pdb
+
 from os import system
 from os import path
 from sys import path as syspath
@@ -110,7 +112,13 @@ class ReceiveOperator(bpy.types.Operator):
         #     return {'FINISHED'}
 
         elif event.type in {'RIGHTMOUSE', 'ESC'}:
-            self.cancel(context)
+            print("ESQUING")
+            self.chord.server.shutdown()
+            self.chord.server.socket.close()
+            self.chord.st.join()
+
+            # pdb.set_trace()
+            # self.cancel(context)
             return {'CANCELLED'}
 
         self.last_event = event.type
@@ -124,6 +132,8 @@ class ReceiveOperator(bpy.types.Operator):
         cancel() get's called when the operator is about to exit
         Here we remove the timer and stop the server
         """
+        print("CANCELLING")
+
         wm = context.window_manager
         wm.event_timer_remove(self._timer)
 

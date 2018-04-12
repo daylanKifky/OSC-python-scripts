@@ -117,6 +117,9 @@ class ReceiveOperator(bpy.types.Operator):
             self.chord.server.socket.close()
             self.chord.st.join()
 
+            for a in self.views_3d:
+                a.header_text_set()
+
             # pdb.set_trace()
             # self.cancel(context)
             return {'CANCELLED'}

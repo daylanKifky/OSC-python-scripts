@@ -66,9 +66,9 @@ cam = D.objects['the_cam']
 from pythonosc import osc_message_builder
 from pythonosc import osc_bundle_builder
 from pythonosc import udp_client
-from mathutils import Matrix
+from mathutils import Matrix, Euler
 from time import sleep
-
+from math import pi
 from os import system
 from os import path
 from sys import path as syspath
@@ -173,15 +173,23 @@ def send_Armature(arm: bpy.types.Armature):
                         msg.add_arg(track.x)
                         msg.add_arg(track.y)
                         msg.add_arg(track.z)
-                        print("TRACK",  track)
+                        # print("TRACK",  track)
 
                         bundle.add_content(msg.build()) 
 
         
         #add coordinates
-        msg = osc_message_builder.OscMessageBuilder(address="/point")
-        msg.add_arg(res[0])
-        msg.add_arg(res[1])
+        msg = osc_message_builder.OscMessageBuilder(address="/chordata/"+b.name)
+        q = b.matrix.to_quaternion()
+        q.rotate(Euler((-pi/2,0,0)))
+        msg.add_arg( q[0])
+        msg.add_arg( q[1])
+        msg.add_arg( q[2])
+        msg.add_arg( q[3])
+
+        if b.name == "LeftHand":
+            print(b.name, b.rotation_quaternion)
+        
 
         bundle.add_content(msg.build())
         
@@ -208,10 +216,10 @@ def send_animation(arm):
         sleep(delay)    
 
 
-class send_osc(bpy.types.Operator):
+class send_anim_osc(bpy.types.Operator):
    
     """Receive quaternions from OSC and move an armature"""
-    bl_idname = "armature.send_osc"
+    bl_idname = "armature.send_anim_osc"
     bl_label = "Send the animation trought OSC"
 
     @classmethod
@@ -231,14 +239,39 @@ class send_osc(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class send_osc(bpy.types.Operator):
+   
+    """Receive quaternions from OSC and move an armature"""
+    bl_idname = "armature.send_still_osc"
+    bl_label = "Send the pose trought OSC"
+
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    def invoke(self, context, ev): 
+        print("SEND INVOKE")
+
+        return self.execute(context)
+
+
+    def execute(self, context):
+        # deb =  note_debouncer()
+        # piano_collide.unregister()
+        send_Armature(context.object)
+        return {"FINISHED"}
+
+
 def register():
     bpy.utils.register_class(send_osc)
+    bpy.utils.register_class(send_anim_osc)
     piano_collide.register()
     
 
 
 def unregister():
     bpy.utils.unregister_class(send_osc)
+    bpy.utils.unregister_class(send_anim_osc)
     piano_collide.unregister()
 
 

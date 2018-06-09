@@ -1,62 +1,5 @@
-
-# Point projection from:
-# - https://blender.stackexchange.com/questions/16472/how-can-i-get-the-cameras-projection-matrix#answer-86570
-# (@fnunnari's response)
-
 import bpy
 from mathutils import Vector
-
-def project_3d_point(camera: bpy.types.Object,
-                     p: Vector,
-                     render: bpy.types.RenderSettings = bpy.context.scene.render) -> Vector:
-    """
-    Given a camera and its projection matrix M;
-    given p, a 3d point to project:
-
-    Compute P’ = M * P
-    P’= (x’, y’, z’, w')
-
-    Ignore z'
-    Normalize in:
-    x’’ = x’ / w’
-    y’’ = y’ / w’
-
-    x’’ is the screen coordinate in normalised range -1 (left) +1 (right)
-    y’’ is the screen coordinate in  normalised range -1 (bottom) +1 (top)
-
-    :param camera: The camera for which we want the projection
-    :param p: The 3D point to project
-    :param render: The render settings associated to the scene.
-    :return: The 2D projected point in normalized range [-1, 1] (left to right, bottom to top)
-    """
-
-    if camera.type != 'CAMERA':
-        raise Exception("Object {} is not a camera.".format(camera.name))
-
-    if len(p) != 3:
-        raise Exception("Vector {} is not three-dimensional".format(p))
-
-    # Get the two components to calculate M
-    modelview_matrix = camera.matrix_world.inverted()
-    projection_matrix = camera.calc_matrix_camera(
-        render.resolution_x,
-        render.resolution_y,
-        render.pixel_aspect_x,
-        render.pixel_aspect_y,
-    )
-
-    # print(projection_matrix * modelview_matrix)
-
-    # Compute P’ = M * P
-    p1 = projection_matrix * modelview_matrix * Vector((p.x, p.y, p.z, 1))
-
-    # Normalize in: x’’ = x’ / w’, y’’ = y’ / w’
-    p2 = Vector(((p1.x/p1.w, p1.y/p1.w)))
-
-    return p2
-
-
-
 
 
 D=bpy.data
@@ -73,123 +16,28 @@ from os import system
 from os import path
 from sys import path as syspath
 
-syspath.append(path.dirname(bpy.data.filepath))
-import piano_collide
-import imp
-imp.reload(piano_collide)
-
-# piano_collide.unregister()
-
 
 IP='127.0.0.1'
 PORT = 6767
 client = udp_client.SimpleUDPClient(IP, PORT)
 
 
-class note_debouncer:
-    zero_v = Vector()
-    def __init__(self):
-        self.last_frame = {}
-        self.vel = self.zero_v
-
-    def track(self, point, ob):
-        res = point - ob.location
-        
-        if res.x > 0 and res.y > 0 and res.z > 0 :
-            return res
-
-        return self.zero_v 
-
-
-    def calculate(self, point, ob):
-        inside = piano_collide.is_inside(point, ob)
-        # print(inside)
-        pressing = False
-        vel = self.zero_v
-
-        if ob.name in self.last_frame.keys():
-            pressing = self.is_pressing(ob.name, inside)
-            vel = self.velocity(ob.name, point)
-
-        self.last_frame[ob.name] = inside
-        self.vel = vel
-        return pressing, vel.magnitude        
-
-    def is_pressing(self, name, state):
-        # result = False
-        # if name in self.last_frame.keys():
-        # print("#"*20,state, self.last_frame[name][0])
-        #     result = (state ^ self.last_frame[name]) & state
-
-        # self.last_frame[name] = (state,)
-        return (state ^ self.last_frame[name]) & state
-
-    def velocity(self, name, pos):
-        return  (pos - self.vel)
-
-
-
-debs = {}
-for b in C.object.pose.bones:
-    debs[b.name]=note_debouncer()
-
-# deb =  note_debouncer()
 
 def send_Armature(arm: bpy.types.Armature):
     bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
-    msg = osc_message_builder.OscMessageBuilder(address="/point")
-    
-    res = project_3d_point(cam, arm.location)
-    msg.add_arg(res[0])
-    msg.add_arg(res[1])
-    
-    #client.send_message("/point", (res[0], res[1]))
     
     for b in arm.pose.bones:
-        M = arm.matrix_world * b.matrix * Matrix.Translation((0,b.vector.magnitude,0))
-        w_loc = M.to_translation()
-        res = project_3d_point(cam, w_loc)
-
-
-
-        if arm.data.bones[b.name].player:
-            # bpy.ops.object.empty_add(radius = 0.1, location= w_loc)
-            for ob in D.objects:
-                if ob.note not in ["NONE", "NOT_SET", "TRACK"]:
-                    # print(ob,w_loc, ob.note)
-                    press, vel = debs[b.name].calculate(w_loc, ob)
-                    if press:
-                    
-                        print("NOTE", ob.note, vel)
-                        msg = osc_message_builder.OscMessageBuilder(address="/note")
-                        msg.add_arg(ob.note)
-                        msg.add_arg(vel)
-                        bundle.add_content(msg.build())
-
-                elif ob.note == "TRACK":
-                    track = debs[b.name].track(w_loc, ob)
-                    if track.to_tuple() != debs[b.name].zero_v.to_tuple():
-                        msg = osc_message_builder.OscMessageBuilder(address="/track")
-                        msg.add_arg(track.x)
-                        msg.add_arg(track.y)
-                        msg.add_arg(track.z)
-                        # print("TRACK",  track)
-
-                        bundle.add_content(msg.build()) 
-
-        
+       
         #add coordinates
         msg = osc_message_builder.OscMessageBuilder(address="/chordata/"+b.name)
         q = b.matrix.to_quaternion()
-        q.rotate(Euler((-pi/2,0,0)))
+        q.rotate(Euler((-pi/2,pi/2,0)))
         msg.add_arg( q[0])
         msg.add_arg( q[1])
         msg.add_arg( q[2])
         msg.add_arg( q[3])
 
-        if b.name == "LeftHand":
-            print(b.name, b.rotation_quaternion)
-        
+
 
         bundle.add_content(msg.build())
         
@@ -227,7 +75,7 @@ class send_anim_osc(bpy.types.Operator):
         return True
 
     def invoke(self, context, ev): 
-        print("SEND INVOKE")
+        # print("SEND INVOKE")
 
         return self.execute(context)
 
@@ -250,7 +98,7 @@ class send_osc(bpy.types.Operator):
         return True
 
     def invoke(self, context, ev): 
-        print("SEND INVOKE")
+        # print("SEND INVOKE")
 
         return self.execute(context)
 
@@ -263,17 +111,17 @@ class send_osc(bpy.types.Operator):
 
 
 def register():
+    print("SENDING OSC to {}:{}".format(IP, PORT))
     bpy.utils.register_class(send_osc)
     bpy.utils.register_class(send_anim_osc)
-    piano_collide.register()
+    
     
 
 
 def unregister():
     bpy.utils.unregister_class(send_osc)
     bpy.utils.unregister_class(send_anim_osc)
-    piano_collide.unregister()
-
+    
 
 
 if __name__ == '__main__':

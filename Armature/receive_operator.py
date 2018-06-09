@@ -26,7 +26,7 @@ system("clear")
 D = bpy.data
 C = bpy.context
 
-do_send_osc = False 
+do_send_osc = True 
 
 
 class ReceiveOperator(bpy.types.Operator):

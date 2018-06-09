@@ -18,7 +18,7 @@ from pythonosc import osc_server
 import bpy
 D = bpy.data
 
-IP, PORT = "10.42.0.1", 6565
+IP, PORT = "", 6565
 
 class OscOperator(bpy.types.Operator):
 	"""Recibe Osc messages and rotate an object"""

@@ -1,5 +1,9 @@
 astrodome
 *.blend?
+*bundled*
+
+pyOSC/*
+python-osc/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

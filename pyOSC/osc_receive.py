@@ -6,7 +6,7 @@ import time, threading
 
 
 # tupple with ip, port.
-receive_address = '127.0.0.1' , 7000
+receive_address = '' , 7777
 
 # OSC Server. 
 s = OSC.OSCServer(receive_address) 
@@ -16,17 +16,17 @@ s = OSC.OSCServer(receive_address)
 # And, if the client supports it, a '/subscribe' & '/unsubscribe' handler
 s.addDefaultHandlers()
 
-def B(addr, tags, stuff, source):
-	# print addr #/print
-	# print tags #sif
+def stamp_all(addr, tags, stuff, source):
+	print addr #/print
+	print tags #sif
 	print stuff #['Test', 2500, 3.140000104904175]
-	# print source #('127.0.0.1', 40232)
+	print source #('127.0.0.1', 40232)
 
 def samplerate(addr, tags, stuff, source):
     print ""
 
-s.addMsgHandler("/print", B) # adding our function
-s.addMsgHandler("/_samplerate", samplerate) #OSC client automatically sends sample rate data, just routing to do mostly nothing
+s.addMsgHandler("/test", stamp_all) # adding our function
+
 
 # just checking which handlers we have added
 print "Registered Callback-functions are :"

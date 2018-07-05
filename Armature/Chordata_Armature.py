@@ -50,6 +50,19 @@ class Chordata:
 			print(" [{}]".format(b.name))
 
 
+	def set_key(self, context):
+		for b in self.object.pose.bones:
+				# print("Setting key to %s"% b.name)
+				self.object.keyframe_insert(\
+					'pose.bones["'+ b.name +'"].rotation_quaternion',
+						index=-1, 
+						frame=context.scene.frame_current, 
+						group=b.name)
+	
+	def reset_pose(self):
+		for b in self.object.pose.bones:
+			b.rotation_quaternion.identity()
+
 
 	def put_quad_on_bones(self):
 		# for b in self.bones:
